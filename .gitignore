@@ -1,1 +1,12 @@
 docs/
+# macOS
+.DS_Store
+# IntelliJ
+.idea/
+*.iml
+# Java / Maven build çıktıları
+target/
+# Node / frontend (Sprint 0 Task 4'te lazım olacak)
+node_modules/
+frontend/dist/
+frontend/public/basemap.pmtiles

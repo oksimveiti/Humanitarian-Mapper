@@ -1,0 +1,13 @@
+package com.semihcetin.project.humapperbackend;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class HumapperBackendApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(HumapperBackendApplication.class, args);
+    }
+
+}
