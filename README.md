@@ -45,11 +45,21 @@ Planned for the first release:
 
 ## Getting Started
 
+### Quick start (everything, via Docker)
+
+```bash
+docker compose up --build
+```
+
+This starts the database, backend, and frontend together:
+- Map:          http://localhost:5173
+- API health:   http://localhost:8080/api/health
+
 ### Prerequisites
 - Docker & Docker Compose
-- Java 21 (for backend development)
+- Java 21 and Node 22 (only for local development without Docker)
 
-### Run the database
+### Run only the database
 
 ```bash
 docker compose up -d db
@@ -74,9 +84,6 @@ npm run dev
 ```
 
 The map is then available at http://localhost:5173
-
-> A full `docker compose up` that starts the database, backend, and frontend together
-> is coming in a later sprint.
 
 ## Contributing
 
