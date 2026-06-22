@@ -8,5 +8,5 @@ docs/
 target/
 # Node / frontend (Sprint 0 Task 4'te lazım olacak)
 node_modules/
-frontend/dist/
-frontend/public/basemap.pmtiles
+humapper-frontend/dist/
+humapper-frontend/public/basemap.pmtiles
