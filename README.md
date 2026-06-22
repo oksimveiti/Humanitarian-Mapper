@@ -34,10 +34,11 @@ Planned for the first release:
 -  Multi-language + right-to-left (RTL) support
 -  Read-only public share link
 -  PostGIS database + Spring Boot API skeleton + health endpoint
+-  React frontend rendering an interactive map (OpenFreeMap basemap)
 
 ## Tech Stack
 
-- **Frontend:** React + MapLibre GL JS + PMTiles (vector basemap, works offline)
+- **Frontend:** React + MapLibre GL JS + OpenFreeMap (free vector basemap, no API key)
 - **Backend:** Java 21 + Spring Boot + Hibernate Spatial
 - **Database:** PostgreSQL + PostGIS
 - **Deployment:** Docker Compose (self-hosted)
@@ -63,6 +64,16 @@ cd humapper-backend
 
 The API is then available at:
 - Health check: http://localhost:8080/api/health
+
+### Run the frontend
+
+```bash
+cd humapper-frontend
+npm install
+npm run dev
+```
+
+The map is then available at http://localhost:5173
 
 > A full `docker compose up` that starts the database, backend, and frontend together
 > is coming in a later sprint.
