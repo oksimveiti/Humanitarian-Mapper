@@ -22,6 +22,10 @@ services:
       - DB_URL=jdbc:postgresql://db:5432/humapper
       - DB_USER=humapper
       - DB_PASSWORD=humapper
+      # Override these in production (e.g. via a .env file or your shell environment):
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-me-please-at-least-32-bytes-long}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.org}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-changeme-admin-password}
     ports:
       - "8080:8080"
     depends_on:

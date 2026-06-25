@@ -10,3 +10,5 @@ target/
 node_modules/
 humapper-frontend/dist/
 humapper-frontend/public/basemap.pmtiles
+# Secrets (real values; .env.example is committed)
+.env
