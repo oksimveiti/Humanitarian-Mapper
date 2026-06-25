@@ -1,13 +1,10 @@
 package com.semihcetin.project.humapperbackend;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class HumapperBackendApplicationTests {
+class HumapperBackendApplicationTests extends AbstractPostgisIntegrationTest {
 
     @Test
     void contextLoads() {
     }
-
 }
