@@ -1,7 +1,5 @@
 package com.semihcetin.project.humapperbackend.user;
 
-import com.semihcetin.project.humapperbackend.repository.OrganizationRepository;
-import com.semihcetin.project.humapperbackend.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

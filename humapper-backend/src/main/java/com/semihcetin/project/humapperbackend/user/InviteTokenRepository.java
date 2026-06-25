@@ -1,6 +1,5 @@
-package com.semihcetin.project.humapperbackend.repository;
+package com.semihcetin.project.humapperbackend.user;
 
-import com.semihcetin.project.humapperbackend.user.InviteToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
