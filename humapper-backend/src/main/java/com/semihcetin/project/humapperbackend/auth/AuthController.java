@@ -17,11 +17,13 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserRepository users;
     private final JwtService jwtService;
+    private final AuthService authService;
 
-    public AuthController(AuthenticationManager authenticationManager, UserRepository users, JwtService jwtService) {
+    public AuthController(AuthenticationManager authenticationManager, UserRepository users, JwtService jwtService, AuthService authService) {
         this.authenticationManager = authenticationManager;
         this.users = users;
         this.jwtService = jwtService;
+        this.authService = authService;
     }
 
     @PostMapping("/login")
@@ -33,6 +35,12 @@ public class AuthController {
         User user = users.findByEmail(request.email()).orElseThrow();
 
         return new LoginResponse(jwtService.generateToken(user));
+    }
+
+    @PostMapping("/activate")
+    @ResponseStatus(HttpStatus.OK)
+    public void activate(@Valid @RequestBody ActivateRequest request) {
+        authService.activate(request.token(), request.newPassword());
     }
 
     @ExceptionHandler(AuthenticationException.class)
