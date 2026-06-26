@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -50,5 +51,17 @@ public class ActivityService {
                 .build();
 
         return ActivityResponse.from(activities.save(activity));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ActivityResponse> findAll() {
+        return activities.findAll().stream().map(ActivityResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ActivityResponse findById(Long id) {
+        Activity activity = activities.findById(id)
+                .orElseThrow(() -> new ActivityNotFoundException(id));
+        return ActivityResponse.from(activity);
     }
 }

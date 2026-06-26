@@ -6,6 +6,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/activities")
 public class ActivityController {
@@ -23,5 +25,15 @@ public class ActivityController {
                                    Authentication authentication) {
         Long userId = Long.valueOf(authentication.getName());
         return service.create(request, userId);
+    }
+
+    @GetMapping
+    public List<ActivityResponse> list() {
+        return service.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ActivityResponse get(@PathVariable Long id) {
+        return service.findById(id);
     }
 }
