@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.security.access.AccessDeniedException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,5 +64,44 @@ public class ActivityService {
         Activity activity = activities.findById(id)
                 .orElseThrow(() -> new ActivityNotFoundException(id));
         return ActivityResponse.from(activity);
+    }
+
+    @Transactional
+    public ActivityResponse update(Long id, CreateActivityRequest req, Long currentUserId) {
+        Activity activity = activities.findById(id)
+                .orElseThrow(() -> new ActivityNotFoundException(id));
+
+        requireOwnership(activity, currentUserId);
+
+        Geometry geom = req.geometry();
+        geom.setSRID(4326);
+        activity.setGeom(geom);
+        activity.setStatus(req.status());
+        activity.setStartDate(req.startDate());
+        activity.setEndDate(req.endDate());
+        activity.setTargetPeople(req.targetPeople());
+        activity.setDescription(req.description());
+        activity.setSectors(new HashSet<>(sectors.findAllById(req.sectorIds())));
+
+        return ActivityResponse.from(activity);
+    }
+
+    @Transactional
+    public void delete(Long id, Long currentUserId) {
+        Activity activity = activities.findById(id)
+                .orElseThrow(() -> new ActivityNotFoundException(id));
+
+        requireOwnership(activity, currentUserId);
+        activities.delete(activity);
+    }
+
+    private void requireOwnership(Activity activity, Long currentUserId) {
+        User user = users.findById(currentUserId)
+                .orElseThrow(() -> new IllegalStateException("Current user not found"));
+        Organization org = user.getOrganization();
+
+        if (org == null || !activity.getOrganization().getId().equals(org.getId())) {
+            throw new AccessDeniedException("Not your organization's activity");
+        }
     }
 }

@@ -36,4 +36,20 @@ public class ActivityController {
     public ActivityResponse get(@PathVariable Long id) {
         return service.findById(id);
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ORG_MEMBER')")
+    public ActivityResponse update(@PathVariable Long id,
+                                   @Valid @RequestBody CreateActivityRequest request,
+                                   Authentication authentication) {
+        return service.update(id, request, Long.valueOf(authentication.getName()));
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ORG_MEMBER')")
+    public void delete(@PathVariable Long id,
+                       Authentication authentication) {
+        service.delete(id, Long.valueOf(authentication.getName()));
+    }
 }
