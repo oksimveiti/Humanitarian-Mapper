@@ -1,10 +1,25 @@
-import MapView from "./map/MapView";
-import "maplibre-gl/dist/maplibre-gl.css";
+import { useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LoginForm from "./auth/LoginForm";
+import Layout from "./Layout";
+import MapPage from "./pages/MapPage";
+import { getToken } from "./api/client";
 
 export default function App() {
-  return (
-      <div style={{ position: "absolute", inset: 0 }}>
-        <MapView />
-      </div>
-  );
+    const [loggedIn, setLoggedIn] = useState(!!getToken());
+
+    if (!loggedIn) {
+        return <LoginForm onLoggedIn={() => setLoggedIn(true)} />;
+    }
+
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route element={<Layout onSignOut={() => setLoggedIn(false)} />}>
+                    <Route path="/" element={<MapPage />} />
+                    {/* ileride: <Route path="/organizations" element={<OrganizationsPage />} /> */}
+                </Route>
+            </Routes>
+        </BrowserRouter>
+    );
 }
