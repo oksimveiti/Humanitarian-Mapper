@@ -28,6 +28,15 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     if (token) headers.set("Authorization", `Bearer ${token}`);
 
     const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+    // Expired or invalid token: clear it and send the user back to the login screen,
+    // so they get a clear "please sign in again" instead of a silent failure.
+    if (res.status === 401) {
+        setToken(null);
+        window.location.reload();
+        throw new Error("Session expired");
+    }
+
     if (!res.ok) throw new Error(`API error ${res.status}`);
     return res;
 }

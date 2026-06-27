@@ -36,3 +36,15 @@ export async function createActivity(input: CreateActivityInput): Promise<Activi
   });
   return res.json();
 }
+
+export async function updateActivity(id: number, input: CreateActivityInput): Promise<Activity> {
+  const res = await apiFetch(`/api/activities/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+  return res.json();
+}
+
+export async function deleteActivity(id: number): Promise<void> {
+  await apiFetch(`/api/activities/${id}`, { method: "DELETE" });
+}

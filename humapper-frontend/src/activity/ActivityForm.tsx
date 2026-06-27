@@ -1,23 +1,28 @@
 import { useEffect, useState } from "react";
 import { fetchSectors, type Sector } from "../api/sectors";
-import { createActivity } from "../api/activities";
+import { createActivity, updateActivity, deleteActivity, type Activity } from "../api/activities";
 
 interface Props {
   geometry: { type: string; coordinates: unknown };
+  activity?: Activity; // present = edit mode (pre-fill + PUT); absent = create (POST)
   onSaved: () => void;
   onCancel: () => void;
 }
 
 const STATUSES = ["PLANNING", "IMPLEMENTATION", "COMPLETED"];
 
-export default function ActivityForm({ geometry, onSaved, onCancel }: Props) {
+export default function ActivityForm({ geometry, activity, onSaved, onCancel }: Props) {
+  const isEdit = activity != null;
+
   const [sectors, setSectors] = useState<Sector[]>([]);
-  const [sectorIds, setSectorIds] = useState<number[]>([]);
-  const [status, setStatus] = useState("PLANNING");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [targetPeople, setTargetPeople] = useState("");
-  const [description, setDescription] = useState("");
+  const [sectorIds, setSectorIds] = useState<number[]>(activity?.sectors.map((s) => s.id) ?? []);
+  const [status, setStatus] = useState(activity?.status ?? "PLANNING");
+  const [startDate, setStartDate] = useState(activity?.startDate ?? "");
+  const [endDate, setEndDate] = useState(activity?.endDate ?? "");
+  const [targetPeople, setTargetPeople] = useState(
+    activity?.targetPeople != null ? String(activity.targetPeople) : ""
+  );
+  const [description, setDescription] = useState(activity?.description ?? "");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -39,19 +44,37 @@ export default function ActivityForm({ geometry, onSaved, onCancel }: Props) {
       return;
     }
     setSaving(true);
+    const input = {
+      geometry,
+      sectorIds,
+      status,
+      startDate: startDate || null,
+      endDate: endDate || null,
+      targetPeople: targetPeople ? Number(targetPeople) : null,
+      description: description || null,
+    };
     try {
-      await createActivity({
-        geometry,
-        sectorIds,
-        status,
-        startDate: startDate || null,
-        endDate: endDate || null,
-        targetPeople: targetPeople ? Number(targetPeople) : null,
-        description: description || null,
-      });
+      if (isEdit) {
+        await updateActivity(activity!.id, input);
+      } else {
+        await createActivity(input);
+      }
       onSaved();
     } catch {
-      setError("Could not save. Are you signed in as an organization member?");
+      setError("Could not save. Are you signed in as the organization that owns this activity?");
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!activity) return;
+    if (!window.confirm("Delete this activity? This cannot be undone.")) return;
+    setSaving(true);
+    try {
+      await deleteActivity(activity.id);
+      onSaved();
+    } catch {
+      setError("Could not delete. Are you signed in as the organization that owns this activity?");
       setSaving(false);
     }
   }
@@ -61,7 +84,7 @@ export default function ActivityForm({ geometry, onSaved, onCancel }: Props) {
                   background: "white", borderLeft: "1px solid #ddd", padding: 16,
                   overflowY: "auto", zIndex: 2 }}>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <h3 style={{ margin: 0 }}>New activity</h3>
+        <h3 style={{ margin: 0 }}>{isEdit ? "Edit activity" : "New activity"}</h3>
 
         <div>
           <div style={{ marginBottom: 6, fontWeight: 600 }}>Sectors</div>
@@ -86,12 +109,12 @@ export default function ActivityForm({ geometry, onSaved, onCancel }: Props) {
 
         <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           Start date
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          <input type="date" value={startDate ?? ""} onChange={(e) => setStartDate(e.target.value)} />
         </label>
 
         <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           End date
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          <input type="date" value={endDate ?? ""} onChange={(e) => setEndDate(e.target.value)} />
         </label>
 
         <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -102,14 +125,20 @@ export default function ActivityForm({ geometry, onSaved, onCancel }: Props) {
 
         <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           Description
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+          <textarea value={description ?? ""} onChange={(e) => setDescription(e.target.value)} rows={3} />
         </label>
 
         {error && <p style={{ color: "crimson", margin: 0 }}>{error}</p>}
 
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button type="submit" disabled={saving}>{saving ? "Saving..." : "Save"}</button>
           <button type="button" onClick={onCancel}>Cancel</button>
+          {isEdit && (
+            <button type="button" onClick={handleDelete} disabled={saving}
+                    style={{ marginLeft: "auto", color: "crimson" }}>
+              Delete
+            </button>
+          )}
         </div>
       </form>
     </div>

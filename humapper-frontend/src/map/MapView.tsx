@@ -7,8 +7,10 @@ import {
     TerraDrawSelectMode,
 } from "terra-draw";
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
-import { fetchActivities } from "../api/activities";
+import { fetchActivities, type Activity } from "../api/activities";
 import ActivityForm from "../activity/ActivityForm";
+import Legend from "./Legend";
+import { sectorColorExpression } from "./sectorColors";
 
 // OpenFreeMap: free, no API key, no usage limits, attribution added automatically.
 const BASEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
@@ -19,7 +21,9 @@ export default function MapView() {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maplibregl.Map | null>(null);
     const drawRef = useRef<TerraDraw | null>(null);
+    const activitiesByIdRef = useRef<Map<number, Activity>>(new Map());
     const [drawnGeometry, setDrawnGeometry] = useState<DrawnGeometry | null>(null);
+    const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
 
     useEffect(() => {
         const map = new maplibregl.Map({
@@ -41,26 +45,51 @@ export default function MapView() {
                 type: "fill",
                 source: "activities",
                 filter: ["==", ["geometry-type"], "Polygon"],
-                paint: { "fill-color": "#2563eb", "fill-opacity": 0.3 },
+                paint: { "fill-color": sectorColorExpression() as never, "fill-opacity": 0.4 },
             });
             map.addLayer({
                 id: "activities-outline",
                 type: "line",
                 source: "activities",
                 filter: ["==", ["geometry-type"], "Polygon"],
-                paint: { "line-color": "#2563eb", "line-width": 1.5 },
+                paint: { "line-color": sectorColorExpression() as never, "line-width": 1.5 },
             });
             map.addLayer({
                 id: "activities-point",
                 type: "circle",
                 source: "activities",
                 filter: ["==", ["geometry-type"], "Point"],
-                paint: { "circle-radius": 6, "circle-color": "#2563eb", "circle-opacity": 0.8 },
+                paint: {
+                    "circle-radius": 6,
+                    "circle-color": sectorColorExpression() as never,
+                    "circle-opacity": 0.85,
+                },
             });
-            await reloadActivities(map);
+            await reloadActivities(map, activitiesByIdRef);
+
+            // Click an activity -> popup with details + an Edit button.
+            const showPopup = (e: maplibregl.MapLayerMouseEvent) => {
+                const id = e.features?.[0]?.properties?.id;
+                const activity = activitiesByIdRef.current.get(Number(id));
+                if (!activity) return;
+                const popup = new maplibregl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(buildPopupHtml(activity))
+                    .addTo(map);
+                const editBtn = popup.getElement()?.querySelector(".popup-edit-btn");
+                editBtn?.addEventListener("click", () => {
+                    setEditingActivity(activity);
+                    popup.remove();
+                });
+            };
+            for (const layer of ["activities-fill", "activities-point"]) {
+                map.on("click", layer, showPopup);
+                map.on("mouseenter", layer, () => (map.getCanvas().style.cursor = "pointer"));
+                map.on("mouseleave", layer, () => (map.getCanvas().style.cursor = ""));
+            }
 
             const draw = new TerraDraw({
-                adapter: new TerraDrawMapLibreGLAdapter({ map, lib: maplibregl }),
+                adapter: new TerraDrawMapLibreGLAdapter({ map }),
                 modes: [
                     new TerraDrawPolygonMode(),
                     new TerraDrawPointMode(),
@@ -88,14 +117,15 @@ export default function MapView() {
         };
     }, []);
 
-    function closeForm() {
+    function closeForms() {
         drawRef.current?.clear();
         setDrawnGeometry(null);
+        setEditingActivity(null);
     }
 
     async function handleSaved() {
-        closeForm();
-        if (mapRef.current) await reloadActivities(mapRef.current);
+        closeForms();
+        if (mapRef.current) await reloadActivities(mapRef.current, activitiesByIdRef);
     }
 
     return (
@@ -106,21 +136,60 @@ export default function MapView() {
                 <button onClick={() => drawRef.current?.setMode("point")}>Drop point</button>
                 <button onClick={() => drawRef.current?.setMode("select")}>Pan</button>
             </div>
+            <Legend />
             {drawnGeometry && (
-                <ActivityForm geometry={drawnGeometry} onSaved={handleSaved} onCancel={closeForm} />
+                <ActivityForm geometry={drawnGeometry} onSaved={handleSaved} onCancel={closeForms} />
+            )}
+            {editingActivity && (
+                <ActivityForm
+                    geometry={editingActivity.geometry}
+                    activity={editingActivity}
+                    onSaved={handleSaved}
+                    onCancel={closeForms}
+                />
             )}
         </div>
     );
 }
 
-async function reloadActivities(map: maplibregl.Map) {
+function escapeHtml(value: string): string {
+    return value.replace(/[&<>"]/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] as string
+    );
+}
+
+function buildPopupHtml(a: Activity): string {
+    const sectors = a.sectors.map((s) => escapeHtml(s.name)).join(", ");
+    const dates = [a.startDate, a.endDate].filter(Boolean).join(" → ");
+    return `
+        <div style="font-size:13px; max-width:240px; line-height:1.4">
+            <strong>${escapeHtml(a.organizationName)}</strong>
+            <div style="margin-top:4px"><b>Sectors:</b> ${sectors}</div>
+            <div><b>Status:</b> ${escapeHtml(a.status)}</div>
+            ${dates ? `<div><b>Dates:</b> ${escapeHtml(dates)}</div>` : ""}
+            ${a.targetPeople != null ? `<div><b>Target people:</b> ${a.targetPeople}</div>` : ""}
+            ${a.description ? `<div style="margin-top:4px">${escapeHtml(a.description)}</div>` : ""}
+            <button class="popup-edit-btn" style="margin-top:8px; cursor:pointer">Edit</button>
+        </div>`;
+}
+
+async function reloadActivities(
+    map: maplibregl.Map,
+    byId: React.MutableRefObject<Map<number, Activity>>
+) {
     const activities = await fetchActivities();
+    byId.current = new Map(activities.map((a) => [a.id, a]));
     const featureCollection = {
         type: "FeatureCollection",
         features: activities.map((a) => ({
             type: "Feature",
             geometry: a.geometry,
-            properties: { id: a.id, status: a.status },
+            properties: {
+                id: a.id,
+                status: a.status,
+                primarySector: a.sectors[0]?.code ?? null,
+                sectorCodes: a.sectors.map((s) => s.code),
+            },
         })),
     };
     (map.getSource("activities") as maplibregl.GeoJSONSource).setData(featureCollection as never);
