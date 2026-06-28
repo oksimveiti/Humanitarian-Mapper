@@ -10,6 +10,7 @@ import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import { fetchActivities, type Activity } from "../api/activities";
 import ActivityForm from "../activity/ActivityForm";
 import Legend from "./Legend";
+import FilterBar from "./FilterBar";
 import { sectorColorExpression } from "./sectorColors";
 
 // OpenFreeMap: free, no API key, no usage limits, attribution added automatically.
@@ -24,6 +25,8 @@ export default function MapView() {
     const activitiesByIdRef = useRef<Map<number, Activity>>(new Map());
     const [drawnGeometry, setDrawnGeometry] = useState<DrawnGeometry | null>(null);
     const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+    const [filterSector, setFilterSector] = useState("");
+    const [filterStatus, setFilterStatus] = useState("");
 
     useEffect(() => {
         const map = new maplibregl.Map({
@@ -67,7 +70,6 @@ export default function MapView() {
             });
             await reloadActivities(map, activitiesByIdRef);
 
-            // Click an activity -> popup with details + an Edit button.
             const showPopup = (e: maplibregl.MapLayerMouseEvent) => {
                 const id = e.features?.[0]?.properties?.id;
                 const activity = activitiesByIdRef.current.get(Number(id));
@@ -117,6 +119,15 @@ export default function MapView() {
         };
     }, []);
 
+    // Apply sector/status filters to the activity layers whenever they change.
+    useEffect(() => {
+        const map = mapRef.current;
+        if (!map || !map.getLayer("activities-fill")) return;
+        map.setFilter("activities-fill", buildFilter("Polygon", filterSector, filterStatus) as never);
+        map.setFilter("activities-outline", buildFilter("Polygon", filterSector, filterStatus) as never);
+        map.setFilter("activities-point", buildFilter("Point", filterSector, filterStatus) as never);
+    }, [filterSector, filterStatus]);
+
     function closeForms() {
         drawRef.current?.clear();
         setDrawnGeometry(null);
@@ -136,6 +147,12 @@ export default function MapView() {
                 <button onClick={() => drawRef.current?.setMode("point")}>Drop point</button>
                 <button onClick={() => drawRef.current?.setMode("select")}>Pan</button>
             </div>
+            <FilterBar
+                sector={filterSector}
+                status={filterStatus}
+                onSectorChange={setFilterSector}
+                onStatusChange={setFilterStatus}
+            />
             <Legend />
             {drawnGeometry && (
                 <ActivityForm geometry={drawnGeometry} onSaved={handleSaved} onCancel={closeForms} />
@@ -150,6 +167,13 @@ export default function MapView() {
             )}
         </div>
     );
+}
+
+function buildFilter(geomType: string, sector: string, status: string): unknown[] {
+    const parts: unknown[] = [["==", ["geometry-type"], geomType]];
+    if (sector) parts.push(["in", sector, ["get", "sectorCodes"]]);
+    if (status) parts.push(["==", ["get", "status"], status]);
+    return ["all", ...parts];
 }
 
 function escapeHtml(value: string): string {

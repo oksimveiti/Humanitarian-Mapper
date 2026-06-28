@@ -1,7 +1,9 @@
 import { Outlet, Link } from "react-router-dom";
-import { setToken } from "./api/client";
+import { setToken, getUserRole } from "./api/client";
 
 export default function Layout({ onSignOut }: { onSignOut: () => void }) {
+    const isCoordinator = getUserRole() === "COORDINATOR";
+
     function handleSignOut() {
         setToken(null);
         onSignOut();
@@ -13,6 +15,7 @@ export default function Layout({ onSignOut }: { onSignOut: () => void }) {
                 <strong>Humanitarian Mapper</strong>
                 <nav style={{ display: "flex", gap: 12 }}>
                     <Link to="/">Map</Link>
+                    {isCoordinator && <Link to="/organizations">Organizations</Link>}
                 </nav>
                 <button onClick={handleSignOut} style={{ marginLeft: "auto" }}>Sign out</button>
             </header>

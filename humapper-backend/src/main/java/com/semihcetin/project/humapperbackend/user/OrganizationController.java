@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/organizations")
 public class OrganizationController {
@@ -13,6 +15,12 @@ public class OrganizationController {
 
     public OrganizationController(OrganizationService service) {
         this.service = service;
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('COORDINATOR')")
+    public List<OrganizationSummary> list() {
+        return service.listOrganizations();
     }
 
     @PostMapping
