@@ -22,6 +22,11 @@ export default function ActivityForm({ geometry, activity, onSaved, onCancel }: 
   const [targetPeople, setTargetPeople] = useState(
     activity?.targetPeople != null ? String(activity.targetPeople) : ""
   );
+  const [reachedPeople, setReachedPeople] = useState(
+    activity?.reachedPeople != null ? String(activity.reachedPeople) : ""
+  );
+  const [budget, setBudget] = useState(activity?.budget != null ? String(activity.budget) : "");
+  const [currency, setCurrency] = useState(activity?.currency ?? "");
   const [description, setDescription] = useState(activity?.description ?? "");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -51,6 +56,9 @@ export default function ActivityForm({ geometry, activity, onSaved, onCancel }: 
       startDate: startDate || null,
       endDate: endDate || null,
       targetPeople: targetPeople ? Number(targetPeople) : null,
+      reachedPeople: reachedPeople ? Number(reachedPeople) : null,
+      budget: budget ? Number(budget) : null,
+      currency: currency.trim() ? currency.trim().toUpperCase() : null,
       description: description || null,
     };
     try {
@@ -117,11 +125,31 @@ export default function ActivityForm({ geometry, activity, onSaved, onCancel }: 
           <input type="date" value={endDate ?? ""} onChange={(e) => setEndDate(e.target.value)} />
         </label>
 
-        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          Target people
-          <input type="number" min={0} value={targetPeople}
-                 onChange={(e) => setTargetPeople(e.target.value)} />
-        </label>
+        <div style={{ display: "flex", gap: 8 }}>
+          <label style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+            Target people
+            <input type="number" min={0} value={targetPeople}
+                   onChange={(e) => setTargetPeople(e.target.value)} />
+          </label>
+          <label style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+            Reached people
+            <input type="number" min={0} value={reachedPeople}
+                   onChange={(e) => setReachedPeople(e.target.value)} />
+          </label>
+        </div>
+
+        <div style={{ display: "flex", gap: 8 }}>
+          <label style={{ display: "flex", flexDirection: "column", gap: 4, flex: 2 }}>
+            Budget
+            <input type="number" min={0} step="0.01" value={budget}
+                   onChange={(e) => setBudget(e.target.value)} />
+          </label>
+          <label style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+            Currency
+            <input type="text" maxLength={3} placeholder="USD" value={currency}
+                   onChange={(e) => setCurrency(e.target.value)} />
+          </label>
+        </div>
 
         <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           Description

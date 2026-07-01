@@ -8,6 +8,7 @@ import ActivitiesPage from "./pages/ActivitiesPage";
 import DashboardPage from "./pages/DashboardPage";
 import SettingsPage from "./pages/SettingsPage";
 import ActivatePage from "./pages/ActivatePage";
+import PublicMapPage from "./pages/PublicMapPage";
 import { getToken } from "./api/client";
 
 export default function App() {
@@ -18,6 +19,8 @@ export default function App() {
             <Routes>
                 {/* Public: invited users set their password here (no login required). */}
                 <Route path="/activate" element={<ActivatePage />} />
+                {/* Public: read-only shared map via a coordinator-generated token. */}
+                <Route path="/public/:token" element={<PublicMapPage />} />
 
                 {loggedIn ? (
                     <Route element={<Layout onSignOut={() => setLoggedIn(false)} />}>

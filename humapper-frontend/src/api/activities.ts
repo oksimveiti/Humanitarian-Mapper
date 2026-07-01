@@ -13,6 +13,9 @@ export interface Activity {
   startDate: string | null;
   endDate: string | null;
   targetPeople: number | null;
+  reachedPeople: number | null;
+  budget: number | null;
+  currency: string | null;
   description: string | null;
   lastUpdated: string;
 }
@@ -24,6 +27,9 @@ export interface CreateActivityInput {
   startDate?: string | null;
   endDate?: string | null;
   targetPeople?: number | null;
+  reachedPeople?: number | null;
+  budget?: number | null;
+  currency?: string | null;
   description?: string | null;
 }
 

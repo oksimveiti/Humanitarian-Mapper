@@ -24,6 +24,13 @@ public class InstanceSettings {
     @Builder.Default
     private boolean configured = false;
 
+    @Column(name = "public_share_enabled", nullable = false)
+    @Builder.Default
+    private boolean publicShareEnabled = false;
+
+    @Column(name = "public_share_token", length = 64)
+    private String publicShareToken;
+
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 

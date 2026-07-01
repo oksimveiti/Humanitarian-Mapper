@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchSettings, updateSettings, type MapVisibility } from "../api/settings";
+import { fetchSettings, updateSettings, setPublicShare, type MapVisibility } from "../api/settings";
 
 export default function SettingsPage() {
   const [visibility, setVisibility] = useState<MapVisibility>("ALL");
@@ -8,11 +8,17 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [shareEnabled, setShareEnabled] = useState(false);
+  const [shareToken, setShareToken] = useState<string | null>(null);
+  const [shareBusy, setShareBusy] = useState(false);
+
   useEffect(() => {
     (async () => {
       try {
         const s = await fetchSettings();
         setVisibility(s.mapVisibility);
+        setShareEnabled(s.publicShareEnabled);
+        setShareToken(s.publicShareToken);
       } catch {
         setError("Could not load settings.");
       } finally {
@@ -20,6 +26,20 @@ export default function SettingsPage() {
       }
     })();
   }, []);
+
+  async function togglePublicShare(next: boolean) {
+    setShareBusy(true);
+    setError(null);
+    try {
+      const s = await setPublicShare(next);
+      setShareEnabled(s.publicShareEnabled);
+      setShareToken(s.publicShareToken);
+    } catch {
+      setError("Could not update public sharing.");
+    } finally {
+      setShareBusy(false);
+    }
+  }
 
   async function save() {
     setSaving(true);
@@ -72,6 +92,33 @@ export default function SettingsPage() {
           {saved && <span style={{ color: "#166534" }}>Saved ✓</span>}
           {error && <span style={{ color: "crimson" }}>{error}</span>}
         </div>
+      </section>
+
+      <hr style={{ margin: "28px 0", border: 0, borderTop: "1px solid #eee" }} />
+
+      <section>
+        <h3 style={{ marginBottom: 4 }}>Public share</h3>
+        <p style={{ color: "#555", marginTop: 0 }}>
+          Create a read-only public link showing only <strong>approved</strong> activities — no
+          login required to view it. Disable any time to revoke the link.
+        </p>
+
+        <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+          <input type="checkbox" checked={shareEnabled} disabled={shareBusy}
+                 onChange={(e) => togglePublicShare(e.target.checked)} />
+          Enable public share link
+        </label>
+
+        {shareEnabled && shareToken && (
+          <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+            <input readOnly value={`${window.location.origin}/public/${shareToken}`}
+                   style={{ flex: 1, fontSize: 12 }} />
+            <button type="button"
+                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/public/${shareToken}`)}>
+              Copy
+            </button>
+          </div>
+        )}
       </section>
     </div>
   );

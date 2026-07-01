@@ -44,6 +44,15 @@ public class Activity {
     @Column(name = "target_people")
     private Integer targetPeople;
 
+    @Column(name = "reached_people")
+    private Integer reachedPeople;
+
+    @Column(precision = 15, scale = 2)
+    private java.math.BigDecimal budget;
+
+    @Column(length = 3)
+    private String currency;
+
     @Column(columnDefinition = "text")
     private String description;
 

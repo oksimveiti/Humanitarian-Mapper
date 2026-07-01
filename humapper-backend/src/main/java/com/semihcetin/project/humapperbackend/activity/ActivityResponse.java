@@ -2,6 +2,7 @@ package com.semihcetin.project.humapperbackend.activity;
 
 import org.locationtech.jts.geom.Geometry;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -17,6 +18,9 @@ public record ActivityResponse(
         LocalDate startDate,
         LocalDate endDate,
         Integer targetPeople,
+        Integer reachedPeople,
+        BigDecimal budget,
+        String currency,
         String description,
         OffsetDateTime lastUpdated
 ) {
@@ -39,6 +43,9 @@ public record ActivityResponse(
                 a.getStartDate(),
                 a.getEndDate(),
                 a.getTargetPeople(),
+                a.getReachedPeople(),
+                a.getBudget(),
+                a.getCurrency(),
                 a.getDescription(),
                 a.getLastUpdated()
         );

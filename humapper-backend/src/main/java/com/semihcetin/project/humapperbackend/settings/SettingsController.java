@@ -25,4 +25,10 @@ public class SettingsController {
     public SettingsResponse update(@Valid @RequestBody UpdateSettingsRequest request) {
         return SettingsResponse.from(service.update(request.mapVisibility()));
     }
+
+    @PutMapping("/public-share")
+    @PreAuthorize("hasRole('COORDINATOR')")
+    public SettingsResponse setPublicShare(@RequestBody PublicShareRequest request) {
+        return SettingsResponse.from(service.setPublicShare(request.enabled()));
+    }
 }

@@ -8,9 +8,11 @@ import com.semihcetin.project.humapperbackend.user.Organization;
 import com.semihcetin.project.humapperbackend.user.User;
 import com.semihcetin.project.humapperbackend.user.UserRepository;
 import org.locationtech.jts.geom.Geometry;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import org.springframework.security.access.AccessDeniedException;
 import java.util.HashSet;
@@ -53,6 +55,9 @@ public class ActivityService {
                 .startDate(req.startDate())
                 .endDate(req.endDate())
                 .targetPeople(req.targetPeople())
+                .reachedPeople(req.reachedPeople())
+                .budget(req.budget())
+                .currency(req.currency())
                 .description(req.description())
                 .sectors(sectorSet)
                 .build();
@@ -89,6 +94,18 @@ public class ActivityService {
                 .toList();
     }
 
+    // Unauthenticated public share: only approved activities, and only if the token is valid.
+    @Transactional(readOnly = true)
+    public List<ActivityResponse> findPublic(String token) {
+        if (!settings.isValidPublicToken(token)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Share link not found");
+        }
+        return activities.findAll().stream()
+                .filter(a -> a.getReviewStatus() == ReviewStatus.APPROVED)
+                .map(ActivityResponse::from)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public ActivityResponse findById(Long id) {
         Activity activity = activities.findById(id)
@@ -110,6 +127,9 @@ public class ActivityService {
         activity.setStartDate(req.startDate());
         activity.setEndDate(req.endDate());
         activity.setTargetPeople(req.targetPeople());
+        activity.setReachedPeople(req.reachedPeople());
+        activity.setBudget(req.budget());
+        activity.setCurrency(req.currency());
         activity.setDescription(req.description());
         activity.setSectors(new HashSet<>(sectors.findAllById(req.sectorIds())));
 

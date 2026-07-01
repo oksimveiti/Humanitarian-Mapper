@@ -40,7 +40,21 @@ export default function DashboardPage() {
     const submitted = activities.filter((a) => a.reviewStatus === "SUBMITTED").length;
     const stale = activities.filter((a) => freshnessOf(a.lastUpdated).days >= 30).length;
     const distinctOrgs = new Set(activities.map((a) => a.organizationName)).size;
-    return { total: activities.length, submitted, stale, distinctOrgs };
+    const targeted = activities.reduce((sum, a) => sum + (a.targetPeople ?? 0), 0);
+    const reached = activities.reduce((sum, a) => sum + (a.reachedPeople ?? 0), 0);
+    const reachedPct = targeted > 0 ? Math.round((reached / targeted) * 100) : null;
+
+    const budgetByCurrency = new Map<string, number>();
+    for (const a of activities) {
+      if (a.budget != null) {
+        const cur = a.currency || "—";
+        budgetByCurrency.set(cur, (budgetByCurrency.get(cur) ?? 0) + a.budget);
+      }
+    }
+    return {
+      total: activities.length, submitted, stale, distinctOrgs,
+      targeted, reached, reachedPct, budgets: [...budgetByCurrency],
+    };
   }, [activities]);
 
   const byReview = useMemo(
@@ -82,6 +96,13 @@ export default function DashboardPage() {
                   to={stats.submitted > 0 ? "/activities" : undefined} accent="#1e40af" />
         <StatCard label="Stale (30d+)" value={stats.stale}
                   to={stats.stale > 0 ? "/activities" : undefined} accent="#9a3412" />
+        <StatCard label="Targeted people" value={stats.targeted.toLocaleString()} />
+        <StatCard label="Reached people" value={stats.reached.toLocaleString()}
+                  sub={stats.reachedPct != null ? `${stats.reachedPct}% of targeted` : undefined}
+                  accent="#166534" />
+        {stats.budgets.map(([cur, total]) => (
+          <StatCard key={cur} label={`Budget (${cur})`} value={total.toLocaleString()} />
+        ))}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
@@ -103,13 +124,14 @@ function countBy<T>(items: T[], key: (t: T) => string): { label: string; count: 
   return [...m].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count);
 }
 
-function StatCard({ label, value, to, accent }: {
-  label: string; value: number; to?: string; accent?: string;
+function StatCard({ label, value, to, accent, sub }: {
+  label: string; value: number | string; to?: string; accent?: string; sub?: string;
 }) {
   const inner = (
     <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: "14px 18px", minWidth: 150 }}>
       <div style={{ fontSize: 28, fontWeight: 700, color: accent ?? "#111827" }}>{value}</div>
       <div style={{ fontSize: 13, color: "#6b7280" }}>{label}</div>
+      {sub && <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>{sub}</div>}
     </div>
   );
   return to ? <Link to={to} style={{ textDecoration: "none" }}>{inner}</Link> : inner;
