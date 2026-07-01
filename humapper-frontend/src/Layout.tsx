@@ -15,6 +15,7 @@ export default function Layout({ onSignOut }: { onSignOut: () => void }) {
                 <strong>Humanitarian Mapper</strong>
                 <nav style={{ display: "flex", gap: 12 }}>
                     <Link to="/">Map</Link>
+                    <Link to="/activities">Activities</Link>
                     {isCoordinator && <Link to="/organizations">Organizations</Link>}
                 </nav>
                 <button onClick={handleSignOut} style={{ marginLeft: "auto" }}>Sign out</button>

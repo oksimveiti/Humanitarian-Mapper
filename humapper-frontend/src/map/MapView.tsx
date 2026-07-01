@@ -74,6 +74,16 @@ export default function MapView() {
             });
             await reloadActivities(map, activitiesByIdRef, setActivities);
 
+            // Coming from the Activities table ("View on map"): focus that activity.
+            const focusId = new URLSearchParams(window.location.search).get("focus");
+            if (focusId) {
+                const target = activitiesByIdRef.current.get(Number(focusId));
+                if (target) {
+                    setSelectedId(target.id);
+                    focusActivity(map, target, () => setEditingActivity(target));
+                }
+            }
+
             const showPopup = (e: maplibregl.MapLayerMouseEvent) => {
                 const id = e.features?.[0]?.properties?.id;
                 const activity = activitiesByIdRef.current.get(Number(id));

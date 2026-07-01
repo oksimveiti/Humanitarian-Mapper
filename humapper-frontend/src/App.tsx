@@ -4,6 +4,7 @@ import LoginForm from "./auth/LoginForm";
 import Layout from "./Layout";
 import MapPage from "./pages/MapPage";
 import OrganizationsPage from "./pages/OrganizationsPage";
+import ActivitiesPage from "./pages/ActivitiesPage";
 import ActivatePage from "./pages/ActivatePage";
 import { getToken } from "./api/client";
 
@@ -19,6 +20,7 @@ export default function App() {
                 {loggedIn ? (
                     <Route element={<Layout onSignOut={() => setLoggedIn(false)} />}>
                         <Route path="/" element={<MapPage />} />
+                        <Route path="/activities" element={<ActivitiesPage />} />
                         <Route path="/organizations" element={<OrganizationsPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Route>
