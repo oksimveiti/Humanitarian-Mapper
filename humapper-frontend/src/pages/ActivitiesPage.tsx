@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchActivities, type Activity } from "../api/activities";
+import { freshnessOf, FreshnessBadge } from "../activity/freshness";
 
 type SortKey = "organizationName" | "status" | "startDate" | "lastUpdated";
 type SortDir = "asc" | "desc";
@@ -13,6 +14,7 @@ export default function ActivitiesPage() {
   const [search, setSearch] = useState("");
   const [sector, setSector] = useState("");
   const [status, setStatus] = useState("");
+  const [onlyStale, setOnlyStale] = useState(false);
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({ key: "lastUpdated", dir: "desc" });
 
   useEffect(() => {
@@ -44,6 +46,7 @@ export default function ActivitiesPage() {
     const filtered = activities.filter((a) => {
       if (sector && !a.sectors.some((s) => s.code === sector)) return false;
       if (status && a.status !== status) return false;
+      if (onlyStale && freshnessOf(a.lastUpdated).days < 30) return false;
       if (q) {
         const hay = `${a.organizationName} ${a.description ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -56,7 +59,7 @@ export default function ActivitiesPage() {
       const bv = b[sort.key] ?? "";
       return String(av).localeCompare(String(bv)) * dir;
     });
-  }, [activities, search, sector, status, sort]);
+  }, [activities, search, sector, status, onlyStale, sort]);
 
   function toggleSort(key: SortKey) {
     setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
@@ -77,6 +80,10 @@ export default function ActivitiesPage() {
           <option value="">All statuses</option>
           {statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14 }}>
+          <input type="checkbox" checked={onlyStale} onChange={(e) => setOnlyStale(e.target.checked)} />
+          Needs update (30d+)
+        </label>
       </div>
 
       {error && <p style={{ color: "crimson" }}>{error}</p>}
@@ -116,7 +123,7 @@ export default function ActivitiesPage() {
                     <td style={{ padding: 8 }}>{a.startDate ?? "—"}</td>
                     <td style={{ padding: 8 }}>{a.endDate ?? "—"}</td>
                     <td style={{ padding: 8 }}>{a.targetPeople ?? "—"}</td>
-                    <td style={{ padding: 8, color: "#6b7280" }}>{formatDate(a.lastUpdated)}</td>
+                    <td style={{ padding: 8 }}><FreshnessBadge lastUpdated={a.lastUpdated} /></td>
                     <td style={{ padding: 8 }}>
                       <Link to={`/?focus=${a.id}`}>View on map</Link>
                     </td>
@@ -141,9 +148,4 @@ function SortableTh({ label, k, sort, onSort }: {
       {label}{active ? (sort.dir === "asc" ? " ▲" : " ▼") : ""}
     </th>
   );
-}
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return isNaN(d.getTime()) ? iso : d.toLocaleDateString();
 }

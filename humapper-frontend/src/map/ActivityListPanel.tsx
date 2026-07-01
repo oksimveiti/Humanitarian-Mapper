@@ -1,4 +1,5 @@
 import type { Activity } from "../api/activities";
+import { FreshnessBadge } from "../activity/freshness";
 
 interface Props {
   activities: Activity[];
@@ -40,8 +41,11 @@ export default function ActivityListPanel({ activities, selectedId, onSelect, on
                 <div style={{ fontSize: 12, color: "#6b7280", margin: "2px 0" }}>
                   {a.sectors.map((s) => s.name).join(", ") || "—"}
                 </div>
-                <span style={{ fontSize: 11, background: "#e0e7ff", color: "#3730a3",
-                               padding: "1px 6px", borderRadius: 999 }}>{a.status}</span>
+                <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                  <span style={{ fontSize: 11, background: "#e0e7ff", color: "#3730a3",
+                                 padding: "1px 6px", borderRadius: 999 }}>{a.status}</span>
+                  <FreshnessBadge lastUpdated={a.lastUpdated} compact />
+                </span>
               </button>
             );
           })
