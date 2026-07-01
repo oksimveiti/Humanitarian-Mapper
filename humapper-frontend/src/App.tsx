@@ -6,6 +6,7 @@ import MapPage from "./pages/MapPage";
 import OrganizationsPage from "./pages/OrganizationsPage";
 import ActivitiesPage from "./pages/ActivitiesPage";
 import DashboardPage from "./pages/DashboardPage";
+import ReviewQueuePage from "./pages/ReviewQueuePage";
 import SettingsPage from "./pages/SettingsPage";
 import ActivatePage from "./pages/ActivatePage";
 import PublicMapPage from "./pages/PublicMapPage";
@@ -27,6 +28,7 @@ export default function App() {
                         <Route path="/" element={<MapPage />} />
                         <Route path="/activities" element={<ActivitiesPage />} />
                         <Route path="/dashboard" element={<DashboardPage />} />
+                        <Route path="/review" element={<ReviewQueuePage />} />
                         <Route path="/organizations" element={<OrganizationsPage />} />
                         <Route path="/settings" element={<SettingsPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />

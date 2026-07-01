@@ -26,6 +26,7 @@ export default function Layout({ onSignOut }: { onSignOut: () => void }) {
                     <Link to="/">Map</Link>
                     <Link to="/dashboard">Dashboard</Link>
                     <Link to="/activities">Activities</Link>
+                    {isCoordinator && <Link to="/review">Review</Link>}
                     {isCoordinator && <Link to="/organizations">Organizations</Link>}
                     {isCoordinator && <Link to="/settings">Settings</Link>}
                 </nav>

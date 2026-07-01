@@ -93,7 +93,7 @@ export default function DashboardPage() {
         <StatCard label="Activities" value={stats.total} />
         <StatCard label="Organizations" value={isCoordinator && orgs ? orgs.length : stats.distinctOrgs} />
         <StatCard label="Awaiting approval" value={stats.submitted}
-                  to={stats.submitted > 0 ? "/activities" : undefined} accent="#1e40af" />
+                  to={isCoordinator ? "/review" : undefined} accent="#1e40af" />
         <StatCard label="Stale (30d+)" value={stats.stale}
                   to={stats.stale > 0 ? "/activities" : undefined} accent="#9a3412" />
         <StatCard label="Targeted people" value={stats.targeted.toLocaleString()} />
