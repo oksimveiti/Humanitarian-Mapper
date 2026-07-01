@@ -13,6 +13,7 @@ public record ActivityResponse(
         Geometry geometry,
         List<SectorDto> sectors,
         ActivityStatus status,
+        ReviewStatus reviewStatus,
         LocalDate startDate,
         LocalDate endDate,
         Integer targetPeople,
@@ -34,6 +35,7 @@ public record ActivityResponse(
                 a.getSectors().stream()
                         .map(s -> new SectorDto(s.getId(), s.getCode(), s.getName())).toList(),
                 a.getStatus(),
+                a.getReviewStatus(),
                 a.getStartDate(),
                 a.getEndDate(),
                 a.getTargetPeople(),

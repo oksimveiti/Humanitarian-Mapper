@@ -28,8 +28,8 @@ public class ActivityController {
     }
 
     @GetMapping
-    public List<ActivityResponse> list() {
-        return service.findAll();
+    public List<ActivityResponse> list(Authentication authentication) {
+        return service.findVisible(authentication);
     }
 
     @GetMapping("/{id}")
@@ -51,5 +51,23 @@ public class ActivityController {
     public void delete(@PathVariable Long id,
                        Authentication authentication) {
         service.delete(id, Long.valueOf(authentication.getName()));
+    }
+
+    @PostMapping("/{id}/submit")
+    @PreAuthorize("hasRole('ORG_MEMBER')")
+    public ActivityResponse submit(@PathVariable Long id, Authentication authentication) {
+        return service.submit(id, Long.valueOf(authentication.getName()));
+    }
+
+    @PostMapping("/{id}/approve")
+    @PreAuthorize("hasRole('COORDINATOR')")
+    public ActivityResponse approve(@PathVariable Long id) {
+        return service.approve(id);
+    }
+
+    @PostMapping("/{id}/request-changes")
+    @PreAuthorize("hasRole('COORDINATOR')")
+    public ActivityResponse requestChanges(@PathVariable Long id) {
+        return service.requestChanges(id);
     }
 }

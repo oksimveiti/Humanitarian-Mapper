@@ -5,6 +5,7 @@ import Layout from "./Layout";
 import MapPage from "./pages/MapPage";
 import OrganizationsPage from "./pages/OrganizationsPage";
 import ActivitiesPage from "./pages/ActivitiesPage";
+import SettingsPage from "./pages/SettingsPage";
 import ActivatePage from "./pages/ActivatePage";
 import { getToken } from "./api/client";
 
@@ -22,6 +23,7 @@ export default function App() {
                         <Route path="/" element={<MapPage />} />
                         <Route path="/activities" element={<ActivitiesPage />} />
                         <Route path="/organizations" element={<OrganizationsPage />} />
+                        <Route path="/settings" element={<SettingsPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Route>
                 ) : (

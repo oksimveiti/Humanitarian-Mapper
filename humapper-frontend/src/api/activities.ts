@@ -1,5 +1,7 @@
 import { apiFetch } from "./client";
 
+export type ReviewStatus = "DRAFT" | "SUBMITTED" | "APPROVED" | "NEEDS_UPDATE";
+
 export interface Activity {
   id: number;
   organizationId: number;
@@ -7,6 +9,7 @@ export interface Activity {
   geometry: { type: string; coordinates: unknown };
   sectors: { id: number; code: string; name: string }[];
   status: string;
+  reviewStatus: ReviewStatus;
   startDate: string | null;
   endDate: string | null;
   targetPeople: number | null;
@@ -47,4 +50,20 @@ export async function updateActivity(id: number, input: CreateActivityInput): Pr
 
 export async function deleteActivity(id: number): Promise<void> {
   await apiFetch(`/api/activities/${id}`, { method: "DELETE" });
+}
+
+// Review workflow transitions. Backend enforces role + ownership + valid transition.
+export async function submitActivity(id: number): Promise<Activity> {
+  const res = await apiFetch(`/api/activities/${id}/submit`, { method: "POST" });
+  return res.json();
+}
+
+export async function approveActivity(id: number): Promise<Activity> {
+  const res = await apiFetch(`/api/activities/${id}/approve`, { method: "POST" });
+  return res.json();
+}
+
+export async function requestChangesActivity(id: number): Promise<Activity> {
+  const res = await apiFetch(`/api/activities/${id}/request-changes`, { method: "POST" });
+  return res.json();
 }

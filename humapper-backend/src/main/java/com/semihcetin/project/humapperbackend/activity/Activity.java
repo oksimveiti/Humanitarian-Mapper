@@ -30,6 +30,11 @@ public class Activity {
     @Column(nullable = false, length = 32)
     private ActivityStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "review_status", nullable = false, length = 32)
+    @Builder.Default
+    private ReviewStatus reviewStatus = ReviewStatus.DRAFT;
+
     @Column(name = "start_date")
     private LocalDate startDate;
 

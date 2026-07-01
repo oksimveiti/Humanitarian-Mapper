@@ -13,6 +13,7 @@ import ActivityListPanel from "./ActivityListPanel";
 import Legend from "./Legend";
 import FilterBar from "./FilterBar";
 import { sectorColorExpression } from "./sectorColors";
+import { REVIEW_META } from "../activity/reviewStatus";
 
 // OpenFreeMap: free, no API key, no usage limits, attribution added automatically.
 const BASEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
@@ -274,6 +275,7 @@ function buildPopupHtml(a: Activity): string {
             <strong>${escapeHtml(a.organizationName)}</strong>
             <div style="margin-top:4px"><b>Sectors:</b> ${sectors}</div>
             <div><b>Status:</b> ${escapeHtml(a.status)}</div>
+            <div><b>Review:</b> ${escapeHtml(REVIEW_META[a.reviewStatus]?.label ?? a.reviewStatus)}</div>
             ${dates ? `<div><b>Dates:</b> ${escapeHtml(dates)}</div>` : ""}
             ${a.targetPeople != null ? `<div><b>Target people:</b> ${a.targetPeople}</div>` : ""}
             ${a.description ? `<div style="margin-top:4px">${escapeHtml(a.description)}</div>` : ""}
