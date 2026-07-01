@@ -11,6 +11,7 @@ import {
 import { fetchMe, type Me } from "../api/me";
 import { freshnessOf, FreshnessBadge } from "../activity/freshness";
 import { REVIEW_META, ReviewStatusBadge } from "../activity/reviewStatus";
+import { activitiesToCsv, downloadCsv } from "../activity/exportCsv";
 
 type SortKey = "organizationName" | "status" | "startDate" | "lastUpdated";
 type SortDir = "asc" | "desc";
@@ -82,6 +83,11 @@ export default function ActivitiesPage() {
     setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
   }
 
+  function exportCsv() {
+    const csv = activitiesToCsv(rows);
+    downloadCsv(`activities-${new Date().toISOString().slice(0, 10)}.csv`, csv);
+  }
+
   async function runAction(fn: (id: number) => Promise<Activity>, id: number) {
     setError(null);
     try {
@@ -139,8 +145,11 @@ export default function ActivitiesPage() {
         <p>Loading…</p>
       ) : (
         <>
-          <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 6 }}>
-            {rows.length} of {activities.length} activities
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+            <span style={{ fontSize: 13, color: "#6b7280" }}>
+              {rows.length} of {activities.length} activities
+            </span>
+            <button onClick={exportCsv} disabled={rows.length === 0}>Export CSV</button>
           </div>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
             <thead>
