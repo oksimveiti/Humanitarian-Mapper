@@ -3,6 +3,7 @@ package com.semihcetin.project.humapperbackend.auth;
 import com.semihcetin.project.humapperbackend.AbstractPostgisIntegrationTest;
 import com.semihcetin.project.humapperbackend.user.InviteResponse;
 import com.semihcetin.project.humapperbackend.user.OrganizationService;
+import com.semihcetin.project.humapperbackend.user.OrganizationType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,7 +24,8 @@ class ActivationTest extends AbstractPostgisIntegrationTest {
 
     @Test
     void invitedUserActivatesAndLogsIn() throws Exception {
-        InviteResponse invite = organizationService.createOrganization("E2E NGO", "e2e@ngo.org");
+        InviteResponse invite = organizationService.createOrganization(
+                "E2E NGO", "e2e@ngo.org", OrganizationType.NATIONAL_NGO);
 
         // davet token'ı ile şifre belirle
         mockMvc.perform(post("/api/auth/activate")

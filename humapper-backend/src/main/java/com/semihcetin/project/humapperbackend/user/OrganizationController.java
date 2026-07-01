@@ -27,6 +27,6 @@ public class OrganizationController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('COORDINATOR')")
     public InviteResponse create(@Valid @RequestBody CreateOrganizationRequest request) {
-        return service.createOrganization(request.orgName(), request.contactEmail());
+        return service.createOrganization(request.orgName(), request.contactEmail(), request.type());
     }
 }

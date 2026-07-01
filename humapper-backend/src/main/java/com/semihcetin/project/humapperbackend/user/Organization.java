@@ -21,4 +21,9 @@ public class Organization {
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private OffsetDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private OrganizationType type = OrganizationType.OTHER;
 }

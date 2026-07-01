@@ -34,16 +34,17 @@ public class OrganizationService {
                     long activityCount = activities.countByOrganizationId(org.getId());
                     return new OrganizationSummary(
                             org.getId(), org.getName(), org.getContactEmail(),
-                            accountStatus, activityCount, org.getCreatedAt());
+                            org.getType(), accountStatus, activityCount, org.getCreatedAt());
                 })
                 .toList();
     }
 
     @Transactional
-    public InviteResponse createOrganization(String orgName, String contactEmail) {
+    public InviteResponse createOrganization(String orgName, String contactEmail, OrganizationType type) {
         Organization org = organizations.save(Organization.builder()
                         .name(orgName)
                         .contactEmail(contactEmail)
+                        .type(type)
                         .build()
         );
 

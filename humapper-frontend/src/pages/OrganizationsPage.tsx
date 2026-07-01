@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import {
   createOrganization,
   fetchOrganizations,
+  ORG_TYPE_LABELS,
   type OrganizationSummary,
+  type OrganizationType,
 } from "../api/organizations";
 
 export default function OrganizationsPage() {
   const [orgs, setOrgs] = useState<OrganizationSummary[]>([]);
   const [orgName, setOrgName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [orgType, setOrgType] = useState<OrganizationType>("NATIONAL_NGO");
   const [newInvite, setNewInvite] = useState<{ name: string; link: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -38,10 +41,11 @@ export default function OrganizationsPage() {
     setError(null);
     setSaving(true);
     try {
-      const res = await createOrganization(orgName, contactEmail);
+      const res = await createOrganization(orgName, contactEmail, orgType);
       setNewInvite({ name: orgName, link: inviteLink(res.inviteToken) });
       setOrgName("");
       setContactEmail("");
+      setOrgType("NATIONAL_NGO");
       await load();
     } catch {
       setError("Could not create the organization.");
@@ -67,6 +71,14 @@ export default function OrganizationsPage() {
         <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           Contact email
           <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} required />
+        </label>
+        <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          Type
+          <select value={orgType} onChange={(e) => setOrgType(e.target.value as OrganizationType)}>
+            {Object.entries(ORG_TYPE_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
         </label>
         <button type="submit" disabled={saving}>{saving ? "Creating..." : "Create & invite"}</button>
       </form>
@@ -96,6 +108,7 @@ export default function OrganizationsPage() {
           <thead>
             <tr style={{ textAlign: "left", borderBottom: "2px solid #eee" }}>
               <th style={{ padding: 8 }}>Organization</th>
+              <th style={{ padding: 8 }}>Type</th>
               <th style={{ padding: 8 }}>Contact</th>
               <th style={{ padding: 8 }}>Status</th>
               <th style={{ padding: 8 }}>Activities</th>
@@ -105,6 +118,7 @@ export default function OrganizationsPage() {
             {orgs.map((o) => (
               <tr key={o.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
                 <td style={{ padding: 8 }}>{o.name}</td>
+                <td style={{ padding: 8 }}>{ORG_TYPE_LABELS[o.type] ?? o.type}</td>
                 <td style={{ padding: 8 }}>{o.contactEmail}</td>
                 <td style={{ padding: 8 }}><StatusBadge status={o.accountStatus} /></td>
                 <td style={{ padding: 8 }}>{o.activityCount}</td>

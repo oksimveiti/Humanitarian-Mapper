@@ -1,0 +1,2 @@
+ALTER TABLE organizations
+    ADD COLUMN type VARCHAR(32) NOT NULL DEFAULT 'OTHER';

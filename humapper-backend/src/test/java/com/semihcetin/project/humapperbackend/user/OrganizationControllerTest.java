@@ -29,7 +29,7 @@ class OrganizationControllerTest extends AbstractPostgisIntegrationTest {
         mockMvc.perform(post("/api/organizations")
                         .header("Authorization", "Bearer " + tokenForRole(Role.COORDINATOR))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"orgName\":\"Test NGO\",\"contactEmail\":\"new-ngo@example.org\"}"))
+                        .content("{\"orgName\":\"Test NGO\",\"contactEmail\":\"new-ngo@example.org\",\"type\":\"NATIONAL_NGO\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.inviteToken").isNotEmpty())
                 .andExpect(jsonPath("$.organizationId").isNumber());
@@ -40,7 +40,7 @@ class OrganizationControllerTest extends AbstractPostgisIntegrationTest {
         mockMvc.perform(post("/api/organizations")
                         .header("Authorization", "Bearer " + tokenForRole(Role.ORG_MEMBER))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"orgName\":\"X\",\"contactEmail\":\"x@example.org\"}"))
+                        .content("{\"orgName\":\"X\",\"contactEmail\":\"x@example.org\",\"type\":\"NATIONAL_NGO\"}"))
                 .andExpect(status().isForbidden());
     }
 
